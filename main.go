@@ -13,7 +13,11 @@ import (
 func main() {
 	router := gin.Default()
 
-	v1 := router.Group("/v1")
+	v1 := router.Group("/v1", func(ctx *gin.Context) {
+		ctx.Header("Content-Type", "application/json")
+		fmt.Println("Middleware Layer")
+		ctx.Next()
+	})
 
 	v1.GET("/", rootHandler)
 
