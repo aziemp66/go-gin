@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -11,15 +13,17 @@ import (
 func main() {
 	router := gin.Default()
 
-	router.GET("/", rootHandler)
+	v1 := router.Group("/v1")
 
-	router.GET("/hello", helloHandler)
+	v1.GET("/", rootHandler)
 
-	router.GET("/books/:id/:title", booksHandler)
+	v1.GET("/hello", helloHandler)
 
-	router.GET("/books", queryHandler)
+	v1.GET("/books/:id/:title", booksHandler)
 
-	router.POST("/books", postBookHandler)
+	v1.GET("/books", queryHandler)
+
+	v1.POST("/books", postBookHandler)
 
 	router.Run(":3000")
 }
@@ -60,7 +64,7 @@ func queryHandler(c *gin.Context) {
 
 type BookInput struct {
 	Title    string      `json:"title" binding:"required"`
-	Price    interface{} `json:"price" binding:"required,number"`
+	Price    json.Number `json:"price" binding:"required,number"`
 	SubTitle string      `json:"sub_title" binding:"required"`
 }
 
@@ -69,6 +73,16 @@ func postBookHandler(c *gin.Context) {
 
 	err := c.ShouldBindJSON(&bookinput)
 	if err != nil {
+		var ve validator.ValidationErrors
+
+		if !errors.As(err, &ve) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": []string{err.Error()},
+			})
+
+			return
+		}
+
 		errorMessages := []string{}
 		for _, e := range err.(validator.ValidationErrors) {
 			errorMessage := fmt.Sprintf("Error on failed %s, condition : %s", e.Field(), e.ActualTag())
