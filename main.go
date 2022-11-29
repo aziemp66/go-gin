@@ -2,12 +2,27 @@ package main
 
 import (
 	"fmt"
+	"log"
 
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+
+	"github.com/aziemp66/go-gin/common/env"
 	"github.com/aziemp66/go-gin/handler"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	cfg := env.LoadConfig()
+
+	dsn := cfg.DB_URL
+	_, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Database Connected")
+
 	router := gin.Default()
 
 	v1 := router.Group("/v1", func(ctx *gin.Context) {
