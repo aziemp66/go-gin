@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/aziemp66/go-gin/book"
 	"github.com/gin-gonic/gin"
 	validator "github.com/go-playground/validator/v10"
 )
@@ -44,14 +45,8 @@ func QueryHandler(c *gin.Context) {
 	})
 }
 
-type BookInput struct {
-	Title    string      `json:"title" binding:"required"`
-	Price    json.Number `json:"price" binding:"required,number"`
-	SubTitle string      `json:"sub_title" binding:"required"`
-}
-
 func PostBookHandler(c *gin.Context) {
-	var bookinput BookInput
+	var bookinput book.BookInput
 
 	err := c.ShouldBindJSON(&bookinput)
 	if err != nil {
